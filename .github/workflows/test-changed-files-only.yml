@@ -145,6 +145,7 @@ jobs:
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace ./existing-code --output-file all.json
+          results-artifact-name: comparison-all-files-results
           github-token: ${{ github.token }}
           changed-files-only: false
 
@@ -153,6 +154,7 @@ jobs:
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace ./existing-code --output-file changed.json
+          results-artifact-name: comparison-changed-files-results
           github-token: ${{ github.token }}
           changed-files-only: true
 
@@ -203,6 +205,7 @@ jobs:
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace ./existing-code --output-file results.json
+          results-artifact-name: quality-gate-results
           github-token: ${{ github.token }}
           changed-files-only: true
 
