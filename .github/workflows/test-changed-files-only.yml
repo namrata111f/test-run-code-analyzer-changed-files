@@ -144,12 +144,8 @@ jobs:
         id: all
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
-<<<<<<< Updated upstream
-          run-arguments: --workspace ./existing-code --output-file all.json
-=======
           run-arguments: --workspace . --output-file all.json
           results-artifact-name: comparison-all-files-results
->>>>>>> Stashed changes
           github-token: ${{ github.token }}
           changed-files-only: false
 
@@ -157,12 +153,8 @@ jobs:
         id: changed
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
-<<<<<<< Updated upstream
-          run-arguments: --workspace ./existing-code --output-file changed.json
-=======
           run-arguments: --workspace . --output-file changed.json
           results-artifact-name: comparison-changed-files-results
->>>>>>> Stashed changes
           github-token: ${{ github.token }}
           changed-files-only: true
 
@@ -212,12 +204,8 @@ jobs:
         id: analyze
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
-<<<<<<< Updated upstream
-          run-arguments: --workspace ./existing-code --output-file results.json
-=======
           run-arguments: --workspace . --output-file results.json
           results-artifact-name: quality-gate-results
->>>>>>> Stashed changes
           github-token: ${{ github.token }}
           changed-files-only: true
 
