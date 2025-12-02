@@ -41,7 +41,7 @@ jobs:
         id: analyze-all
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
-          run-arguments: --workspace ./existing-code --output-file results-all.json
+          run-arguments: --workspace . --output-file results-all.json
           results-artifact-name: all-files-results
           github-token: ${{ github.token }}
           changed-files-only: false
@@ -92,7 +92,7 @@ jobs:
         id: analyze-changed
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
-          run-arguments: --workspace ./existing-code --output-file results-changed.json
+          run-arguments: --workspace . --output-file results-changed.json
           results-artifact-name: changed-files-results
           github-token: ${{ github.token }}
           changed-files-only: true
@@ -144,7 +144,12 @@ jobs:
         id: all
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
+<<<<<<< Updated upstream
           run-arguments: --workspace ./existing-code --output-file all.json
+=======
+          run-arguments: --workspace . --output-file all.json
+          results-artifact-name: comparison-all-files-results
+>>>>>>> Stashed changes
           github-token: ${{ github.token }}
           changed-files-only: false
 
@@ -152,7 +157,12 @@ jobs:
         id: changed
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
+<<<<<<< Updated upstream
           run-arguments: --workspace ./existing-code --output-file changed.json
+=======
+          run-arguments: --workspace . --output-file changed.json
+          results-artifact-name: comparison-changed-files-results
+>>>>>>> Stashed changes
           github-token: ${{ github.token }}
           changed-files-only: true
 
@@ -202,7 +212,12 @@ jobs:
         id: analyze
         uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
+<<<<<<< Updated upstream
           run-arguments: --workspace ./existing-code --output-file results.json
+=======
+          run-arguments: --workspace . --output-file results.json
+          results-artifact-name: quality-gate-results
+>>>>>>> Stashed changes
           github-token: ${{ github.token }}
           changed-files-only: true
 
