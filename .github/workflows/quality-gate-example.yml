@@ -1,0 +1,123 @@
+name: Quality Gate Example
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  code-quality-check:
+    name: Code Quality Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli@latest
+
+      - name: Install Code Analyzer
+        run: sf plugins install code-analyzer@latest
+
+      - name: Run Code Analyzer on Changed Files
+        id: code-analyzer
+        uses: forcedotcom/run-code-analyzer@main
+        with:
+          run-arguments: --workspace . --output-file code-analysis-results.json
+          results-artifact-name: code-analysis-results
+          github-token: ${{ github.token }}
+          changed-files-only: true  # Only check files changed in this PR
+
+      - name: Evaluate Quality Gate
+        id: quality-gate
+        run: |
+          # Get violation counts from the code analyzer outputs
+          SEV1_COUNT=${{ steps.code-analyzer.outputs.num-sev1-violations }}
+          SEV2_COUNT=${{ steps.code-analyzer.outputs.num-sev2-violations }}
+          TOTAL_COUNT=${{ steps.code-analyzer.outputs.num-violations }}
+          
+          echo "Critical Violations: $SEV1_COUNT"
+          echo "High Violations: $SEV2_COUNT"
+          echo "Total Violations: $TOTAL_COUNT"
+          
+          # Set quality gate criteria
+          MAX_TOTAL_VIOLATIONS=10
+          
+          # Check if quality gate should fail
+          SHOULD_FAIL=false
+          FAIL_REASON=""
+          
+          if [ "$SEV1_COUNT" -gt 0 ]; then
+            SHOULD_FAIL=true
+            FAIL_REASON="Found $SEV1_COUNT critical severity violation(s)"
+          elif [ "$SEV2_COUNT" -gt 0 ]; then
+            SHOULD_FAIL=true
+            FAIL_REASON="Found $SEV2_COUNT high severity violation(s)"
+          elif [ "$TOTAL_COUNT" -gt "$MAX_TOTAL_VIOLATIONS" ]; then
+            SHOULD_FAIL=true
+            FAIL_REASON="Total violations ($TOTAL_COUNT) exceeds maximum allowed ($MAX_TOTAL_VIOLATIONS)"
+          fi
+          
+          # Output for next steps
+          echo "should_fail=$SHOULD_FAIL" >> $GITHUB_OUTPUT
+          echo "fail_reason=$FAIL_REASON" >> $GITHUB_OUTPUT
+
+      - name: Post Quality Gate Results
+        if: always()
+        run: |
+          if [ "${{ steps.quality-gate.outputs.should_fail }}" == "true" ]; then
+            echo "### ❌ Quality Gate Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Reason:** ${{ steps.quality-gate.outputs.fail_reason }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "#### Violation Breakdown" >> $GITHUB_STEP_SUMMARY
+            echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔴 Critical (Sev 1) | ${{ steps.code-analyzer.outputs.num-sev1-violations }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟠 High (Sev 2) | ${{ steps.code-analyzer.outputs.num-sev2-violations }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🟡 Medium (Sev 3) | ${{ steps.code-analyzer.outputs.num-sev3-violations }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔵 Low (Sev 4) | ${{ steps.code-analyzer.outputs.num-sev4-violations }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⚪ Info (Sev 5) | ${{ steps.code-analyzer.outputs.num-sev5-violations }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total** | ${{ steps.code-analyzer.outputs.num-violations }} |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📋 Check the full report in the workflow artifacts." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ✅ Quality Gate Passed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "All code quality checks passed for the changed files!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Violations | ${{ steps.code-analyzer.outputs.num-violations }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Critical | ${{ steps.code-analyzer.outputs.num-sev1-violations }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| High | ${{ steps.code-analyzer.outputs.num-sev2-violations }} |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail Build if Quality Gate Failed
+        if: steps.quality-gate.outputs.should_fail == 'true'
+        run: |
+          echo "::error::Quality gate failed: ${{ steps.quality-gate.outputs.fail_reason }}"
+          exit 1
+
+      - name: Success Message
+        if: steps.quality-gate.outputs.should_fail != 'true'
+        run: |
+          echo "✅ Code quality check passed! No blocking violations found in changed files."
+

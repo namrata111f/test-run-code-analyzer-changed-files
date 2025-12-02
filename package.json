@@ -1,0 +1,23 @@
+{
+  "name": "test-run-code-analyzer-changed-files",
+  "version": "1.0.0",
+  "description": "Test repository for demonstrating the changed-files-only feature of run-code-analyzer GitHub Action",
+  "main": "existing-code/legacy-file.js",
+  "scripts": {
+    "test": "echo \"This is a test repository - no tests to run\" && exit 0"
+  },
+  "keywords": [
+    "salesforce",
+    "code-analyzer",
+    "github-actions",
+    "quality-gate",
+    "static-analysis"
+  ],
+  "author": "Salesforce",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/test-run-code-analyzer-changed-files.git"
+  }
+}
+
