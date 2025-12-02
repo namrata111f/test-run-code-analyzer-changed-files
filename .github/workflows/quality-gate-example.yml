@@ -39,7 +39,7 @@ jobs:
 
       - name: Run Code Analyzer on Changed Files
         id: code-analyzer
-        uses: forcedotcom/run-code-analyzer@main
+        uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace . --output-file code-analysis-results.json
           results-artifact-name: code-analysis-results

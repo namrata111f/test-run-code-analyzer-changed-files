@@ -39,7 +39,7 @@ jobs:
 
       - name: Run Code Analyzer - All Files
         id: analyze-all
-        uses: forcedotcom/run-code-analyzer@main
+        uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace ./existing-code --output-file results-all.json
           results-artifact-name: all-files-results
@@ -90,7 +90,7 @@ jobs:
 
       - name: Run Code Analyzer - Changed Files Only
         id: analyze-changed
-        uses: forcedotcom/run-code-analyzer@main
+        uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace ./existing-code --output-file results-changed.json
           results-artifact-name: changed-files-results
@@ -142,7 +142,7 @@ jobs:
 
       - name: Scan All Files
         id: all
-        uses: forcedotcom/run-code-analyzer@main
+        uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace ./existing-code --output-file all.json
           github-token: ${{ github.token }}
@@ -150,7 +150,7 @@ jobs:
 
       - name: Scan Changed Files
         id: changed
-        uses: forcedotcom/run-code-analyzer@main
+        uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace ./existing-code --output-file changed.json
           github-token: ${{ github.token }}
@@ -200,7 +200,7 @@ jobs:
 
       - name: Run Analysis
         id: analyze
-        uses: forcedotcom/run-code-analyzer@main
+        uses: forcedotcom/run-code-analyzer@ng-pr-changes
         with:
           run-arguments: --workspace ./existing-code --output-file results.json
           github-token: ${{ github.token }}
