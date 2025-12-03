@@ -39,7 +39,7 @@ jobs:
 
       - name: Run Code Analyzer - All Files
         id: analyze-all
-        uses: forcedotcom/run-code-analyzer@ng-pr-changes
+        uses: forcedotcom/run-code-analyzer@ng-test-new-op
         with:
           run-arguments: --workspace . --output-file results-all.json
           results-artifact-name: all-files-results
@@ -90,7 +90,7 @@ jobs:
 
       - name: Run Code Analyzer - Changed Files Only
         id: analyze-changed
-        uses: forcedotcom/run-code-analyzer@ng-pr-changes
+        uses: forcedotcom/run-code-analyzer@ng-test-new-op
         with:
           run-arguments: --workspace . --output-file results-changed.json
           results-artifact-name: changed-files-results
@@ -142,7 +142,7 @@ jobs:
 
       - name: Scan All Files
         id: all
-        uses: forcedotcom/run-code-analyzer@ng-pr-changes
+        uses: forcedotcom/run-code-analyzer@ng-test-new-op
         with:
           run-arguments: --workspace . --output-file all.json
           results-artifact-name: comparison-all-files-results
@@ -151,7 +151,7 @@ jobs:
 
       - name: Scan Changed Files
         id: changed
-        uses: forcedotcom/run-code-analyzer@ng-pr-changes
+        uses: forcedotcom/run-code-analyzer@ng-test-new-op
         with:
           run-arguments: --workspace . --output-file changed.json
           results-artifact-name: comparison-changed-files-results
@@ -202,7 +202,7 @@ jobs:
 
       - name: Run Analysis
         id: analyze
-        uses: forcedotcom/run-code-analyzer@ng-pr-changes
+        uses: forcedotcom/run-code-analyzer@ng-test-new-op
         with:
           run-arguments: --workspace . --output-file results.json
           results-artifact-name: quality-gate-results
