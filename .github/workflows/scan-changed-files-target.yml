@@ -1,0 +1,112 @@
+name: Scan Changed Files (--target approach)
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  scan-changed-files:
+    name: Scan Changed Files Only
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli@latest
+
+      - name: Install Code Analyzer Plugin
+        run: sf plugins install code-analyzer@latest
+
+      # 1. Detect changed files
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@v46
+
+      # 2. Convert to comma-separated list for --target
+      - name: Create comma-separated list
+        id: format
+        run: |
+          RAW="${{ steps.changed.outputs.all_changed_files }}"
+          echo "Raw changed files: $RAW"
+          
+          if [ -z "$RAW" ]; then
+            echo "No changed files detected"
+            echo "csv_list=" >> $GITHUB_OUTPUT
+            echo "has_files=false" >> $GITHUB_OUTPUT
+          else
+            CSV=$(echo "$RAW" | tr ' ' ',')
+            echo "CSV list: $CSV"
+            echo "csv_list=$CSV" >> $GITHUB_OUTPUT
+            echo "has_files=true" >> $GITHUB_OUTPUT
+          fi
+
+      # 3. Run Code Analyzer on changed files only
+      - name: Run Code Analyzer on Changed Files
+        if: steps.format.outputs.has_files == 'true'
+        id: analyze
+        uses: forcedotcom/run-code-analyzer@ng-test-new-op
+        with:
+          run-arguments: |
+            --workspace .
+            --target "${{ steps.format.outputs.csv_list }}"
+            --output-file results.json
+          results-artifact-name: changed-files-scan-results
+          github-token: ${{ github.token }}
+
+      - name: No Changed Files
+        if: steps.format.outputs.has_files == 'false'
+        run: |
+          echo "No changed files to scan"
+          echo "## No Changed Files" >> $GITHUB_STEP_SUMMARY
+          echo "No files were changed in this PR, nothing to scan." >> $GITHUB_STEP_SUMMARY
+
+      - name: Display Results
+        if: steps.format.outputs.has_files == 'true'
+        run: |
+          echo "## Scan Results (Changed Files Only)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Exit Code | ${{ steps.analyze.outputs.exit-code }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Violations | ${{ steps.analyze.outputs.num-violations }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Critical (Sev 1) | ${{ steps.analyze.outputs.num-sev1-violations }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| High (Sev 2) | ${{ steps.analyze.outputs.num-sev2-violations }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Medium (Sev 3) | ${{ steps.analyze.outputs.num-sev3-violations }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Files Scanned:** ${{ steps.format.outputs.csv_list }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Quality Gate
+        if: steps.format.outputs.has_files == 'true'
+        run: |
+          SEV1=${{ steps.analyze.outputs.num-sev1-violations }}
+          SEV2=${{ steps.analyze.outputs.num-sev2-violations }}
+          
+          if [ "$SEV1" -gt 0 ] || [ "$SEV2" -gt 0 ]; then
+            echo "❌ Quality Gate Failed!"
+            echo "Critical violations: $SEV1"
+            echo "High violations: $SEV2"
+            exit 1
+          else
+            echo "✅ Quality Gate Passed!"
+          fi
+
