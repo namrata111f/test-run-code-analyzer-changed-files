@@ -37,22 +37,21 @@ jobs:
       - name: Install Code Analyzer
         run: sf plugins install code-analyzer@latest
 
-      - name: Run Code Analyzer on Changed Files
+      - name: Run Code Analyzer
         id: code-analyzer
-        uses: forcedotcom/run-code-analyzer@ng-test-new-op
+        uses: forcedotcom/run-code-analyzer@ng/add-new-changed-file-options
         with:
           run-arguments: --workspace . --output-file code-analysis-results.json
           results-artifact-name: code-analysis-results
           github-token: ${{ github.token }}
-          changed-files-only: true  # Only check files changed in this PR
 
       - name: Evaluate Quality Gate
         id: quality-gate
         run: |
-          # Get violation counts from the code analyzer outputs
-          SEV1_COUNT=${{ steps.code-analyzer.outputs.num-sev1-violations }}
-          SEV2_COUNT=${{ steps.code-analyzer.outputs.num-sev2-violations }}
-          TOTAL_COUNT=${{ steps.code-analyzer.outputs.num-violations }}
+          # Use the new *-in-changed-files outputs for quality gates on changed files only
+          SEV1_COUNT=${{ steps.code-analyzer.outputs.num-sev1-violations-in-changed-files }}
+          SEV2_COUNT=${{ steps.code-analyzer.outputs.num-sev2-violations-in-changed-files }}
+          TOTAL_COUNT=${{ steps.code-analyzer.outputs.num-violations-in-changed-files }}
           
           echo "Critical Violations: $SEV1_COUNT"
           echo "High Violations: $SEV2_COUNT"

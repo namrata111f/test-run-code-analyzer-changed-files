@@ -64,7 +64,7 @@ jobs:
       - name: Run Code Analyzer on Changed Files
         if: steps.format.outputs.has_files == 'true'
         id: analyze
-        uses: forcedotcom/run-code-analyzer@ng-test-new-op
+        uses: forcedotcom/run-code-analyzer@ng/add-new-changed-file-options
         with:
           run-arguments: |
             --workspace .
