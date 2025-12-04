@@ -66,10 +66,7 @@ jobs:
         id: analyze
         uses: forcedotcom/run-code-analyzer@ng/add-new-changed-file-options
         with:
-          run-arguments: |
-            --workspace .
-            --target "${{ steps.format.outputs.csv_list }}"
-            --output-file results.json
+          run-arguments: --workspace . --target "${{ steps.format.outputs.csv_list }}" --output-file results.json
           results-artifact-name: changed-files-scan-results
           github-token: ${{ github.token }}
 
